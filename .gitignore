@@ -1,0 +1,7 @@
+*.o
+*.exe
+*.elf
+*.gba
+*.sav
+tools/bin2c
+graphics/*.c
