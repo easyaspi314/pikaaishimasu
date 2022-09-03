@@ -4,4 +4,5 @@
 *.gba
 *.sav
 tools/bin2c
+tools/armsdt
 graphics/*.c
