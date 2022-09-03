@@ -38,5 +38,12 @@ typedef vu16 dispcnt_p_t;
 #  define REG_DISCPNT32 REG_DISPCNT
 #endif
 
+// optimization: Some globals are constants
+#ifdef MODERN
+#  define CONSTANT const
+#else
+#  define CONSTANT // nothing
+#endif
+
 #endif // GLOBAL_H
 

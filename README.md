@@ -1,10 +1,11 @@
 # pikaaishimasu
 
 This is a decompilation of *Pikachu ga Pokeboru o Aishimasu* (ピカチュウがポケボルをアイします, Pikachu
-Loves Poké Balls), one of the oldest homebrew games.
+Loves Poké Balls), one of the oldest GBA homebrew games.
 
 It doesn't function properly on any accurate emulator or hardware, due to a bad header checksum and
-trying to display sprites in bitmap Mode 4.
+trying to display low sprites in Mode 4. If compiled with `make BUGFIX=1`, these major bugs (as well as
+some minor bugs) will be fixed.
 
 It (should) build the rom with the following SHA1 checksum, but it currently doesn't match.
 
