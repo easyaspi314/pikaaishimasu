@@ -13,17 +13,29 @@ WINE :=
 EXE := .exe
 endif
 
+ifeq ($(MODERN),)
 ARMCC := $(WINE) $(ARMSDT)/Bin/armcc.exe
 ARMAS := $(WINE) $(ARMSDT)/Bin/armasm.exe
 ARMLD := $(WINE) $(ARMSDT)/Bin/armlink.exe
+else
+ARMCC := $(DEVKITARM)/bin/arm-none-eabi-gcc
+ARMAS := $(DEVKITARM)/bin/arm-none-eabi-as
+ARMLD := $(DEVKITARM)/bin/arm-none-eabi-ld
+endif
 
-# todo: fromelf.exe if available
+FROMELF := $(ARMSDT)/Bin/fromelf.exe
 OBJCOPY := $(DEVKITARM)/bin/arm-none-eabi-objcopy
 GBAFIX := $(DEVKITPRO)/tools/bin/gbafix
+SHA1 := $(shell { command -v sha1sum || command -v shasum; } 2>/dev/null) -c
 
 # -Wd disables "Warning: Deprecated declaration foo() - give arg types" triggered in the libGBA
 # header. It still complains about an enum with a comma though.
+# Fixed by including the libGBA header in the source and fixing the warning.
+ifneq (,$(findstring "Norcroft  ARM C vsn 4.76 (Advanced RISC Machines SDT 2.11a) [Apr  7 1998]",$(ARMCC) | head -n 1))
 ARMCFLAGS := -DONE_TRANSLATION_UNIT -Otime -O2 -arch 4T -I include -I . -I $(DEVKITPRO)/libgba/include -Wd
+else
+ARMCFLAGS := -DONE_TRANSLATION_UNIT -arch 4T -I include -I . -I $(DEVKITPRO)/libgba/include -Wd
+endif
 
 ARMLDFLAGS := -elf -ro-base 0x08000000 -rw-base 0x03000000 -first 'src/rom_header.o(Start)'
 
@@ -47,10 +59,18 @@ endif
 
 
 $(ROM): $(ELF)
+ifeq ($(MODERN),)
+	$(FROMELF) -nodebug -nozeropad pikaaishimasu.elf -bin pikaaishimasu.gba
+else
 	$(OBJCOPY) -O binary $< $@ || $(RM) $@
+endif
 ifneq ($(BUGFIX),)
 	# Fix the header
 	$(GBAFIX) -t"Rinen Rulez" -m01 -r11 $@ || $(RM) $@
+endif
+
+ifeq (compare,$(MAKECMDGOALS))
+	@$(SHA1) rom.sha1
 endif
 
 $(ELF): $(OBJS)
@@ -75,5 +95,7 @@ src/main.o: src/main.c $(HEADERS) $(GLOBBED_SRCS)
 
 clean:
 	$(RM) $(ROM) $(ELF) $(OBJS) $(BIN2C) $(C_DATA)
+
+compare: $(ROM)
 
 .PHONY: clean

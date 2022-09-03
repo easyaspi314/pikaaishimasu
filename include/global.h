@@ -46,4 +46,3 @@ typedef vu16 dispcnt_p_t;
 #endif
 
 #endif // GLOBAL_H
-
