@@ -35,7 +35,7 @@ typedef vu32 dispcnt_p_t;
 #  define REG_DISPCNT32 *((vu32 *)REG_BASE)
 #else
 typedef vu16 dispcnt_p_t;
-#  define REG_DISCPNT32 REG_DISPCNT
+#  define REG_DISPCNT32 REG_DISPCNT
 #endif
 
 // optimization: Some globals are constants

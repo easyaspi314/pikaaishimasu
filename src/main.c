@@ -10,6 +10,7 @@
 #include "global_variables.c"
 #endif
 
+
 #define ArraySize(x) (sizeof(x) / sizeof((x)[0]))
 
 // BUG: this doesn't advance the pointer correctly and ends up filling everything
@@ -100,24 +101,44 @@ void Unref_ToggleBackbuffer(void)
 // match
 void DelayFrames(u32 count)
 {
-    u8 j;
-    u32 i;
+#ifndef BUGFIX
     u32 dummy = 42069; // can be anything
+    u8 j;
+#endif
+    u32 i;
+
     for (i = 0; i < count; i++)
     {
+#ifdef BUGFIX
+        // Proper "next frame" waiting loop.
+        // Setti
+        volatile u16 *pVCount = (volatile u16 *)&REG_VCOUNT;
+        while (*pVCount == SCREEN_HEIGHT)
+        {}
+#endif
         WaitForVBlank();
-        // Not only is this loop useless, but armcc puts an erroneous __rt_divtest(3) call
-        // despite not allocating the dummy variable or calling __rt_udiv(), which itself is
-        // useless because __rt_divcheck is literally this:
-        // void __rt_divtest(u32 denom) {
-        //     if (denom == 0) {
-        //         __rt_div0(); // raise SIGFPE
-        //     }
-        // }
+
+#ifndef BUGFIX
+        // Rudimentary timing loop that just happens to work because armcc puts a call to __rt_divtest()
+        // to check if 3 is non-zero, despite not actually dividing or even initializing the dummy variable.
+        // This loop is literally
+        //  void __rt_divtest(u32 val)
+        //  {
+        //      if (val == 0)
+        //      {
+        //          __rt_div0(); // raise SIGFPE
+        //      }
+        //  }
+        //  for (j = 0; j < 100; ++j)
+        //  {
+        //      __rt_divtest(3);
+        //  }
         for (j = 0; j < 100; ++j)
         {
             dummy /= 3;
         }
+#endif
+
     }
 }
 // match
@@ -730,7 +751,11 @@ void GameLoop(void)
 }
 
 // match
+#ifdef MODERN
+int main(void)
+#else
 void AgbMain(void)
+#endif
 {
     for (;;)
     {
