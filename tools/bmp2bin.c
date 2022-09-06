@@ -1,15 +1,14 @@
 // Converts a BMP to/from the strange format this game uses
 //
 // For backgrounds, they are in the format that the GBA uses for Mode 4,
-// which is a vertically flipped 8bpp bitmap. It is a simple memcpy.
+// which is a simple 8bpp bitmap. It is a simple memcpy.
 //
 // For sprites and tiles, it is not converted to the GBA's tile format,
-// rather it is also copied in 
+// rather it is also copied as-is and converted at runtime.
 //
 // The palette format consists of 256 3 byte colors, of r, g, b
-// from 0-31. At runtime, they are packed in 
-//
-// The image format is in bitmap order, but with the rows flipped.
+// from 0-31. At runtime, they are packed into the 15-bit palette used
+// by the GBA.
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -183,11 +182,13 @@ static void convert_from_bmp(char *argv[])
         printf("Invalid or unsupported BMP!\n");
         exit(1);
     }
+    // todo
     if (header.width < 0)
     {
         printf("I can only handle negative heights for now :(\n");
         exit(1);
     }
+    // todo
     if (abs(header.width) % 4 != 0)
     {
         printf("BMP width is not a multiple of 4!\n");
@@ -214,6 +215,7 @@ static void convert_from_bmp(char *argv[])
         }
         read_bytes(image_data, bmp_size, bmp);
 
+        // bmps are upside down
         if (header.height < 0)
         {
             // negative height: don't flip
@@ -294,7 +296,7 @@ static void convert_to_bmp(char *argv[])
         exit(1);
     }
 
-    // Allocate
+    // Bitmaps are upside down, flip it
     for (int32_t i = header.height; i-- > 0;)
     {
         read_bytes(image_data + i * header.width, header.width, bin);
