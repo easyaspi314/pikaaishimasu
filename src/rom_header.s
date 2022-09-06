@@ -47,7 +47,11 @@ SoftwareVersion
     DCB 11
     ; This checksum is incorrect. It should be 0xB7.
 ComplementCheck
-    DCB 0xF0
+    IF BUGFIX = 1
+      DCB 0xB7
+    ELSE
+      DCB 0xF0
+    ENDIF
 Reserved2
     DCB 0x00, 0x00
 entry

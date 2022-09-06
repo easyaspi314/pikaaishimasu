@@ -15,12 +15,20 @@ It (should) build the rom with the following SHA1 checksum, but it currently doe
 
 #### Requirements:
  - The standard Unix build tools
- - devkitARM. Non-modern builds will be allowed to omit this requirement in the future.
  - For a build that attempts to match:
-   - ARM SDT 2.50 or 2.51 for Windows
+   - ARM SDT 2.11a, 2.50 or 2.51 for Windows
    - On non-Windows platforms, Wine and Winetricks
+ - For a modern build:
+   - devkitARM
 
 For legal reasons, the ARM SDT cannot be provided.
+
+Before building, it is necessary to run
+```sh
+git submodule init
+git submodule update
+```
+to download libgba.
 
 #### Classic build (requires ARM SDT):
 
@@ -36,8 +44,6 @@ Change paths if necessary.
 #  Lib
 #    armlib_cn.32l
 export ARMSDT=/c/ARM251
-export DEVKITPRO=/opt/devkitpro
-export DEVKITARM=/opt/devkitpro/devkitARM
 make
 ```
 
@@ -52,6 +58,7 @@ you need to run `winetricks -q mfc42` to install the MSVC 6 runtime.
 
 Change paths if necessary.
 ```sh
+# if you didn't have them set already 
 export DEVKITPRO=/opt/devkitpro
 export DEVKITARM=/opt/devkitpro/devkitARM
 make MODERN=1

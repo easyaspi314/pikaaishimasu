@@ -204,8 +204,8 @@ void FUN_080003dc(u16 param_1, u16 param_2, s32 param_3, const u32 *param_4, u32
 //   - The types of the integer arguments are different
 //   - Some arguments were declared register
 //   - There is an inline function
-void ConvertBitmap(int param_1, int param_2, u16 *param_3, u32 *param_4, int param_5, int param_6,
-                  const u32 *param_7, u8 param_8, u8 param_9, u8 param_10)
+    void ConvertBitmap(int param_1, int param_2, u16 *param_3, u32 *param_4, int param_5, int param_6,
+                    const u32 *param_7, u8 param_8, u8 param_9, u8 param_10)
 {
     int iVar1;
     u8 uVar3;
@@ -266,7 +266,7 @@ void ConvertBitmap(int param_1, int param_2, u16 *param_3, u32 *param_4, int par
 }
 
 // match
-void FUN_080005fc(const u32 *param_1, u32 *param_2)
+void DeinterleaveSprite(const u32 *param_1, u32 *param_2)
 {
     for (gI = 0; gI < 4; ++gI)
     {
@@ -292,16 +292,16 @@ void DisclaimerAndCopyright(void)
 {
     u32 tmpDispCnt;
     REG_DISPCNT32 = MODE_4;
-    ConvertPaletteToRGB5(PTR_Palette_DisclaimerAndCopyright, PTR_BG_COLORS);
+    ConvertPaletteToRGB5(PTR_PAL_Disclaimer, PTR_BG_COLORS);
     tmpDispCnt = REG_DISPCNT32;
     REG_MOSAIC = 0;
     tmpDispCnt |= BG2_ON | BACKBUFFER;
     REG_BG2CNT |= BG_MOSAIC;
     REG_DISPCNT32 = tmpDispCnt;
-    CPUCopy32(ArraySize(BG_Disclaimer), PTR_BG_Disclaimer, PTR_FRONTBUFFER);
+    CPUCopy32(ArraySize(IMG_Disclaimer), PTR_IMG_Disclaimer, PTR_FRONTBUFFER);
     REG_DISPCNT32 &= ~BACKBUFFER;
     DelayFrames(400);
-    CPUCopy32(ArraySize(BG_Copyright), PTR_BG_Copyright, PTR_BACKBUFFER);
+    CPUCopy32(ArraySize(IMG_Copyright), PTR_IMG_Copyright, PTR_BACKBUFFER);
     REG_DISPCNT32 |= BACKBUFFER;
     DelayFrames(300);
 }
@@ -324,26 +324,26 @@ void TitleScreen(void)
     PTR_OAM[0] = 0x206e;
     PTR_OAM[1] = 0x8068;
     PTR_OAM[2] = 2 + CHAR_START;
-    ConvertPaletteToRGB5(DAT_0805fc9f, PTR_BG_COLORS);
-    ConvertPaletteToRGB5(DAT_0805ffa2, PTR_OBJ_COLORS);
-    ConvertBitmap(0x1e, 10, PTR_MAP_10, PTR_TILE_BASES_0, 1, 1, DAT_0800bc9c, 0, 0, 0);
-    ConvertBitmap(0x10, 10, PTR_MAP_11, PTR_TILE_BASES_2, 2, 1, DAT_0801579c, 0, 0, 0);
-    ConvertBitmap(0x10, 10, PTR_MAP_12, PTR_TILE_BASES_2 + 0xa00, 2, 1, DAT_08012f9c, 0xa0, 0, 8);
-    ConvertBitmap(0x10, 10, PTR_MAP_13, PTR_TILE_BASES_3 + 0x400, 2, 1, DAT_0801079c, 0x40,
+    ConvertPaletteToRGB5(PAL_TitleScreenName, PTR_BG_COLORS);
+    ConvertPaletteToRGB5(PAL_Pikachu, PTR_OBJ_COLORS);
+    ConvertBitmap(240 / 8, 80 / 8, PTR_MAP_10, PTR_TILE_BASES_0, 1, 1, IMG_TitleScreenName, 0, 0, 0);
+    ConvertBitmap(128 / 8, 80 / 8, PTR_MAP_11, PTR_TILE_BASES_2, 2, 1, IMG_TitleScreenCloud, 0, 0, 0);
+    ConvertBitmap(128 / 8, 80 / 8, PTR_MAP_12, PTR_TILE_BASES_2 + 0xa00, 2, 1, IMG_TitleScreenTrees, 0xa0, 0, 8);
+    ConvertBitmap(128 / 8, 80 / 8, PTR_MAP_13, PTR_TILE_BASES_3 + 0x400, 2, 1, IMG_TitleScreenGrass, 0x40,
                  0, 10);
     REG_DISPCNT32 |= OBJ_1D_MAP;
     for (gI = 0; gI < 0x10; ++gI)
     {
         PTR_OBJ_TILES[gI] = 0;
     }
-    FUN_080005fc(Sprite_Pikachu, PTR_OBJ_TILES + 0x10);
+    DeinterleaveSprite(IMG_Pikachu, PTR_OBJ_TILES + 0x10);
     REG_DISPCNT32 |= 0x1f00;
     while (bVar1 < 0x32)
     {
         if ((((REG_KEYINPUT & KEY_START) == 0 && (bVar1 = 1)) || bVar1 >= 1) && (uVar3 & 1) == 0) // weird
         {
             ++bVar1;
-            FadePalette(DAT_0805fc9f, PTR_BG_COLORS, bVar1);
+            FadePalette(PAL_TitleScreenName, PTR_BG_COLORS, bVar1);
         }
 
         uVar3 -= 3;
@@ -356,7 +356,7 @@ void TitleScreen(void)
             uVar4 = 0;
         }
         DelayFrames(1);
-        FUN_080005fc(Sprite_Pikachu + uVar4 * 0x100, PTR_OBJ_TILES + 0x10);
+        DeinterleaveSprite(IMG_Pikachu + uVar4 * 0x100, PTR_OBJ_TILES + 0x10);
         REG_BG3HOFS = uVar3;
         REG_BG2HOFS = (s32)uVar3 >> 1;
         REG_BG1HOFS = (s32)uVar3 >> 2;
@@ -574,8 +574,8 @@ void LevelClear(void)
     BlurOut(1);
     Inline_ResetSprites();
     Inline_SetMode();
-    CPUCopy32(ArraySize(BG_LevelClear), BG_LevelClear, PTR_FRONTBUFFER);
-    ConvertPaletteToRGB5(Palette_LevelClear, PTR_BG_COLORS);
+    CPUCopy32(ArraySize(IMG_LevelClear), IMG_LevelClear, PTR_FRONTBUFFER);
+    ConvertPaletteToRGB5(PAL_LevelClear, PTR_BG_COLORS);
     PrintScore(0xb8, 0x3c, gCurrentScore);
     PrintStageBonus(0xb8, 0x52, gCurrentStage * 50);
     gCurrentScore = Inline_AddStageBonus();
@@ -595,8 +595,8 @@ void GameOver(void)
     Inline_ResetSprites();
     Inline_SetMode();
     tmp = 4;
-    CPUCopy32(ArraySize(BG_GameOver), BG_GameOver, PTR_FRONTBUFFER);
-    ConvertPaletteToRGB5(Palette_GameOver, PTR_BG_COLORS);
+    CPUCopy32(ArraySize(IMG_GameOver), IMG_GameOver, PTR_FRONTBUFFER);
+    ConvertPaletteToRGB5(PAL_GameOver, PTR_BG_COLORS);
     Inline_SetMode2();
     SetDispCntFlag(REG_DISPCNT32 | BG2_ENABLE);
     DelayFrames(400);
@@ -640,23 +640,23 @@ void GameLoop(void)
             SpawnBall(gI);
         }
         Inline_SetMode();
-        CPUCopy32(ArraySize(BG_LevelName), BG_LevelName, PTR_FRONTBUFFER);
-        ConvertPaletteToRGB5(Palette_LevelName, PTR_BG_COLORS);
+        CPUCopy32(ArraySize(IMG_LevelName), IMG_LevelName, PTR_FRONTBUFFER);
+        ConvertPaletteToRGB5(PAL_LevelName, PTR_BG_COLORS);
         PTR_OAM[4] = OBJ_Y(64) | OBJ_256_COLOR;
         PTR_OAM[5] = OBJ_X(112) | ATTR1_SIZE_16;
         PTR_OAM[6] = gCurrentStage * 8 + 0x22 + CHAR_START;
         REG_DISPCNT32 &= ~BACKBUFFER;
 
-        FUN_080005fc(Sprite_Pikachu + 1024, PTR_OBJ_TILES + 0x10);
+        DeinterleaveSprite(IMG_Pikachu + 1024, PTR_OBJ_TILES + 0x10);
         REG_DISPCNT32 |= OBJ_1D_MAP;
         for (gI = 0; gI < 20; ++gI)
         {
-            FUN_08000198(DAT_0805039c + gI * 0x40,
+            FUN_08000198(IMG_Font + gI * 0x40,
                          PTR_OBJ_TILES + gI * 0x40 + 0x110);
         }
         for (gI = 0; gI < 12; ++gI)
         {
-            FUN_08000198(DAT_0805179c + gI * 0x40,
+            FUN_08000198(IMG_Balls + gI * 0x40,
                          PTR_OBJ_TILES + gI * 0x40 + 0x610);
         }
         DelayFrames(1);
@@ -664,23 +664,23 @@ void GameLoop(void)
         DelayFrames(100);
         for (gI = 1; gI < 0x20; ++gI)
         {
-            FadePalette(Palette_LevelName, PTR_BG_COLORS, gI);
+            FadePalette(PAL_LevelName, PTR_BG_COLORS, gI);
             DelayFrames(1);
         }
         if (gCurrentStage == 1)
         {
-            CPUCopy32(ArraySize(BG_Stage1), BG_Stage1, PTR_FRONTBUFFER);
-            Inline_ChangePalette(Palette_Stage1);
+            CPUCopy32(ArraySize(IMG_Level1), IMG_Level1, PTR_FRONTBUFFER);
+            Inline_ChangePalette(PAL_Level1);
         }
         if (gCurrentStage == 2)
         {
-            CPUCopy32(ArraySize(BG_Stage2), BG_Stage2, PTR_FRONTBUFFER);
-            Inline_ChangePalette(Palette_Stage2);
+            CPUCopy32(ArraySize(IMG_Level2), IMG_Level2, PTR_FRONTBUFFER);
+            Inline_ChangePalette(PAL_Level2);
         }
         if (gCurrentStage == 3)
         {
-            CPUCopy32(ArraySize(BG_Stage3), BG_Stage3, PTR_FRONTBUFFER);
-            Inline_ChangePalette(Palette_Stage3);
+            CPUCopy32(ArraySize(IMG_Level3), IMG_Level3, PTR_FRONTBUFFER);
+            Inline_ChangePalette(PAL_Level3);
         }
         for (;;)
         {
@@ -733,7 +733,7 @@ void GameLoop(void)
             }
             gPlayerWasMoving = gPlayerIsMoving;
             WaitForVBlank();
-            FUN_080005fc(Sprite_Pikachu + gPlayerSpriteIndex * 0x100, PTR_OBJ_TILES + 0x10);
+            DeinterleaveSprite(IMG_Pikachu + gPlayerSpriteIndex * 0x100, PTR_OBJ_TILES + 0x10);
             PTR_OAM[0] = gPlayerY | ATTR0_COLOR_256;
             // redundantly redundant
             PTR_OAM[1] = gPlayerX | ATTR1_SIZE_32;

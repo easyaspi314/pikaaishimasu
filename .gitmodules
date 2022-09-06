@@ -1,0 +1,3 @@
+[submodule "libgba"]
+	path = libgba
+	url = https://github.com/devkitPro/libgba

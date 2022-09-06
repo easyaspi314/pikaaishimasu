@@ -46,9 +46,9 @@ u16 gI = 0;
 u16 gJ = 0;
 u32 unused_03000058 = 0;
 // not sure why these are here
-const u32 *CONSTANT PTR_BG_Disclaimer = BG_Disclaimer;
-const u32 *CONSTANT PTR_BG_Copyright = BG_Copyright;
-const u8 *CONSTANT PTR_Palette_DisclaimerAndCopyright = Palette_DisclaimerAndCopyright;
+const u32 *CONSTANT PTR_IMG_Disclaimer = IMG_Disclaimer;
+const u32 *CONSTANT PTR_IMG_Copyright = IMG_Copyright;
+const u8 *CONSTANT PTR_PAL_Disclaimer = PAL_Disclaimer;
 
 u32 unused_03000068 = 0; // unused
 u16 gCurrentScore = 0;
