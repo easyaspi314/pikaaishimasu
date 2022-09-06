@@ -1,7 +1,7 @@
 
 ifeq (,$(DEVKITPRO))
-  ifeq (,$(MODERN))
-    $(error "Please define DEVKITPRO to build a modern or bugfix build")
+  ifneq (,$(MODERN))
+    $(error "Please define DEVKITPRO to build a modern build")
   endif
 endif
 
