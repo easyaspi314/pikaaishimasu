@@ -13,24 +13,31 @@
 
 #define ArraySize(x) (sizeof(x) / sizeof((x)[0]))
 
-// BUG: this doesn't advance the pointer correctly and ends up filling everything
-// in OAM with 0x20c8, aside from the last entries. It has no visible effect though
-// because it will try and display sprite 200 whch
+// BUG: This loop does not reset OAM correctly. It is supposed to set each of the 128
+// OAM entries to { 0x20c8, 0x00fa, 0x0000 } but because it doesn't multiply gI by 4 (the
+// size of each OAM entry), it will instead fill the first 32 OAM entries with 0x20c8
+// followed by 0x00fa 0x0000 to the 33rd.
+// Intended (for 4 iterations):
+//   20c8 00fa 0000 xxxx 20c8 00fa 0000 xxxx 20c8 00fa 0000 xxxx 20c8 00fa 0000 xxxx...
+// Bugged:
+//   20c8 20c8 20c8 20c8 00fa 0000 xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx xxxx...
+// This has no visible effect because the entries will be interpreted as sprites which
+// happen to be invisible.
 #ifdef BUGFIX
-#define BUGGED_OAM_INCREMENT 4
+#define OAM_ENTRY_SIZE 4
 #else
-#define BUGGED_OAM_INCREMENT 1
+#define OAM_ENTRY_SIZE 1
 #endif
 
-#define Inline_ResetSprites()                              \
-    do                                                     \
-    {                                                      \
-        for (gI = 0; gI < 128; gI += BUGGED_OAM_INCREMENT) \
-        {                                                  \
-            PTR_OAM[gI + 0] = 200 | OBJ_256_COLOR;         \
-            PTR_OAM[gI + 1] = 250;                         \
-            PTR_OAM[gI + 2] = 0;                           \
-        }                                                  \
+#define Inline_ResetSprites()                                                           \
+    do                                                                                  \
+    {                                                                                   \
+        for (gI = 0; gI < 128; gI++)                                                    \
+        {                                                                               \
+            PTR_OAM[gI * OAM_ENTRY_SIZE + 0] = OBJ_Y(200) | OBJ_256_COLOR; /* 0x20c8 */ \
+            PTR_OAM[gI * OAM_ENTRY_SIZE + 1] = OBJ_X(250);                 /* 0x00fa */ \
+            PTR_OAM[gI * OAM_ENTRY_SIZE + 2] = 0;                          /* 0x0000 */ \
+        }                                                                               \
     } while (0)
 
 #define BallScore(ball) ((ball)*2 + 1)
@@ -111,10 +118,13 @@ void DelayFrames(u32 count)
     {
 #ifdef BUGFIX
         // Proper "next frame" waiting loop.
-        // Setti
+        // This is required for modern GCC as it is too smart to emit the silly loop below
+        // and will therefore keep reading SCREEN_HEIGHT from REG_VCOUNT and return instead
+        // of delaying frames.
         volatile u16 *pVCount = (volatile u16 *)&REG_VCOUNT;
-        while (*pVCount == SCREEN_HEIGHT)
-        {}
+        do
+        {
+        } while (*pVCount == SCREEN_HEIGHT);
 #endif
         WaitForVBlank();
 
@@ -204,7 +214,7 @@ void FUN_080003dc(u16 param_1, u16 param_2, s32 param_3, const u32 *param_4, u32
 //   - The types of the integer arguments are different
 //   - Some arguments were declared register
 //   - There is an inline function
-    void ConvertBitmap(int param_1, int param_2, u16 *param_3, u32 *param_4, int param_5, int param_6,
+void ConvertBitmap(int param_1, int param_2, u16 *param_3, u32 *param_4, int param_5, int param_6,
                     const u32 *param_7, u8 param_8, u8 param_9, u8 param_10)
 {
     int iVar1;
@@ -313,17 +323,17 @@ void TitleScreen(void)
     u8 bVar1 = 0;
     u16 uVar3 = 0;
     u8 uVar4 = 0;
-    REG_BG0CNT = BG_PRIORITY(0) | BG_TILE_BASE(0) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(10); // 0xac0
-    REG_BG1CNT = BG_PRIORITY(3) | BG_TILE_BASE(2) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(11); // 0xbcb
-    REG_BG2CNT = BG_PRIORITY(2) | BG_TILE_BASE(2) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(12); // 0xcca
-    REG_BG3CNT = BG_PRIORITY(1) | BG_TILE_BASE(3) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(13); // 0xdcd
+    REG_BG0CNT = BG_PRIORITY(0) | BG_TILE_BASE(0) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(10); // 0x0ac0
+    REG_BG1CNT = BG_PRIORITY(3) | BG_TILE_BASE(2) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(11); // 0x0bcb
+    REG_BG2CNT = BG_PRIORITY(2) | BG_TILE_BASE(2) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(12); // 0x0cca
+    REG_BG3CNT = BG_PRIORITY(1) | BG_TILE_BASE(3) | BG_256_COLOR | BG_MOSAIC | BG_MAP_BASE(13); // 0x0dcd
     REG_MOSAIC = 0;
     REG_DISPCNT32 = OBJ_1D_MAP;
 
     Inline_ResetSprites();
-    PTR_OAM[0] = 0x206e;
-    PTR_OAM[1] = 0x8068;
-    PTR_OAM[2] = 2 + CHAR_START;
+    PTR_OAM[0] = OBJ_Y(110) | OBJ_256_COLOR; // 0x206e
+    PTR_OAM[1] = OBJ_X(104) | ATTR1_SIZE_32; // 0x8068
+    PTR_OAM[2] = OBJ_CHAR(CHAR_START + 2);   // 0x0002/0x0202
     ConvertPaletteToRGB5(PAL_TitleScreenName, PTR_BG_COLORS);
     ConvertPaletteToRGB5(PAL_Pikachu, PTR_OBJ_COLORS);
     ConvertBitmap(240 / 8, 80 / 8, PTR_MAP_10, PTR_TILE_BASES_0, 1, 1, IMG_TitleScreenName, 0, 0, 0);
@@ -337,7 +347,7 @@ void TitleScreen(void)
         PTR_OBJ_TILES[gI] = 0;
     }
     DeinterleaveSprite(IMG_Pikachu, PTR_OBJ_TILES + 0x10);
-    REG_DISPCNT32 |= 0x1f00;
+    REG_DISPCNT32 |= BG_ALL_ENABLE | OBJ_ENABLE; // 0x1f00
     while (bVar1 < 0x32)
     {
         if ((((REG_KEYINPUT & KEY_START) == 0 && (bVar1 = 1)) || bVar1 >= 1) && (uVar3 & 1) == 0) // weird
@@ -443,8 +453,8 @@ void DisplayBall(u8 ball, u16 index)
     }
     if (gBallState_status[ball] == 0)
     {
-        PTR_OAM[index + 0] = OBJ_Y(0xC8) | OBJ_256_COLOR;
-        PTR_OAM[index + 1] = 0;
+        PTR_OAM[index + 0] = OBJ_Y(200) | OBJ_256_COLOR;
+        PTR_OAM[index + 1] = OBJ_X(0);
         PTR_OAM[index + 2] = 0;
     }
     if (gBallState_status[ball] > 1)
@@ -629,11 +639,15 @@ void GameLoop(void)
         }
         Inline_ResetSprites();
         // reset player's position
-        PTR_OAM[0] = OBJ_Y(110) | OBJ_256_COLOR;
-        PTR_OAM[1] = OBJ_X(104) | ATTR1_SIZE_32;
-        PTR_OAM[2] = OBJ_CHAR(CHAR_START + 2);
-        REG_BLDCNT = 0x440;
-        REG_BLDALPHA = 0x808;
+        PTR_OAM[0] = OBJ_Y(110) | OBJ_256_COLOR; // 0x206e
+        PTR_OAM[1] = OBJ_X(104) | ATTR1_SIZE_32; // 0x8068
+        PTR_OAM[2] = OBJ_CHAR(CHAR_START + 2);   // 0x0002/0x0202
+        // Not sure why there aren't macros for these.
+        // Set Color Special Effect to Alpha Blending and set the second target
+        // pixel to BG2
+        REG_BLDCNT = (1 << 6) | BIT(10);         // 0x0440
+        // EVA coefficient = 4, EVB coefficient = 4
+        REG_BLDALPHA = (4 << 0) | (4 << 8);      // 0x0808
         for (gI = 0; gI < NUM_BALLS; ++gI)
         {
             DelayFrames(1);
