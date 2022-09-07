@@ -21,10 +21,8 @@ LIBGBA := ./libgba
 OBJS := src/rom_header.o src/main.o
 HEADERS := include/constants.h include/global.h include/graphics.h include/stdint.h \
            include/stdbool.h include/variables.h
-ARMCPPFLAGS :=  -DONE_TRANSLATION_UNIT  -I include -I $(LIBGBA)/include
+ARMCPPFLAGS := -DONE_TRANSLATION_UNIT -I include -I $(LIBGBA)/include
 
-# DATA := $(wildcard graphics/*.bin*)
-# C_DATA := $(patsubst %.bin8,%.c,$(patsubst %.bin32,%.c,$(DATA)))
 # For organization the source code is split but it is compiled together
 GLOBBED_SRCS := src/global_variables.c src/rodata.c
 

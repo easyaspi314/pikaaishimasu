@@ -4,6 +4,7 @@
 *.gba
 *.sav
 tools/bin2c
+tools/bmp2bin
 tools/armsdt
 graphics/*/*.c
 graphics/*/*.bin
