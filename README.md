@@ -9,7 +9,7 @@ bugs (as well as some minor bugs) will be fixed.
 
 It (should) build the rom with the following SHA1 checksum, but it currently doesn't match.
 
-`d29656289680e245a32484f28872851c26167d43 pokeaishimasu.gba`
+`d29656289680e245a32484f28872851c26167d43 pikaaishimasu.gba`
 
 ### Building
 
