@@ -52,6 +52,7 @@ static int read_8(FILE *f)
         printf("Error reading from file!\n");
         exit(1);
     }
+    return c;
 }
 
 static void write_bytes(const void *buf, size_t n, FILE *f)
