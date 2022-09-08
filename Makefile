@@ -46,7 +46,7 @@ ifeq ($(MODERN),)
   # -Wd disables "Warning: Deprecated declaration foo() - give arg types" triggered in the libGBA
   # header. It still complains about an enum with a comma though.
   # Fixed by including the libGBA header in the source and fixing the warning.
-  ifeq (,$(findstring 2.11a,$(shell $(ARMCC) | head -n 1)))
+  ifeq (,$(findstring 2.11a,$(shell $(ARMCC) | head -1)))
     ARMCFLAGS += -O2
   endif
   ARMLDFLAGS := -bin -ro-base 0x08000000 -rw-base 0x03000000 -first 'src/rom_header.o(Start)'
