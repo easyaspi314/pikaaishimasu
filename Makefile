@@ -75,11 +75,11 @@ ifeq ($(MODERN),)
   $(ROM): $(OBJS)
 	$(ARMLD) $(ARMLDFLAGS) -Output $@ src/rom_header.o src/main.o $(ARMLIB)
     ifeq (compare,$(MAKECMDGOALS))
-    ifeq ($(BUGFIX),)
+      ifeq ($(BUGFIX),)
 	@$(SHA1) rom.sha1
-    else    
+      else    
 	@echo "Of course it isn't gonna match, silly"
-    endif
+      endif
     endif
 
   src/rom_header.o: src/rom_header.s
