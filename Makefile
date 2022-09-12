@@ -61,8 +61,8 @@ else
   ARMCPPFLAGS += -DMODERN
 endif
 
-BIN2C := tools/bin2c
-BMP2BIN := tools/bmp2bin
+BIN2C := tools/bin2c$(EXE)
+BMP2BIN := tools/bmp2bin$(EXE)
 
 ifneq ($(BUGFIX)$(MODERN),)
     ARMCPPFLAGS += -DBUGFIX
