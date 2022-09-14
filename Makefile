@@ -36,18 +36,18 @@ ifeq ($(MODERN),)
   ARMCC := $(WINE) $(ARMSDT)/Bin/armcc.exe
   ARMAS := $(WINE) $(ARMSDT)/Bin/armasm.exe
   ARMLD := $(WINE) $(ARMSDT)/Bin/armlink.exe
+  ARMASFLAGS := -via options.txt
+  ARMCFLAGS := $(ARMASFLAGS) -Otime -arch 4T -Wd
   ifeq (,$(BUGFIX))
-    ARMASFLAGS := -via options.txt -pd "BUGFIX SETA 0"
+    ARMASFLAGS += -pd "BUGFIX SETA 0"
   else
-    ARMASFLAGS := -via options.txt -pd "BUGFIX SETA 1"
+    ARMASFLAGS += -pd "BUGFIX SETA 1"
   endif
   # -Wd disables "Warning: Deprecated declaration foo() - give arg types" triggered in the libGBA
   # header. It still complains about an enum with a comma though.
   # Fixed by including the libGBA header in the source and fixing the warning.
-  ifeq (,$(findstring 2.11a,$(shell $(ARMCC) | head -n 1)))
-    ARMCFLAGS := -via options.txt -Otime -O2 -arch 4T -Wd
-  else
-    ARMCFLAGS := -via options.txt -Otime -arch 4T -Wd
+  ifeq (,$(findstring 2.11a,$(shell $(ARMCC) | head -1)))
+    ARMCFLAGS += -O2
   endif
   ARMLDFLAGS := -bin -ro-base 0x08000000 -rw-base 0x03000000 -first 'src/rom_header.o(Start)'
   ARMLIB := $(ARMSDT)/lib/armlib_cn.32l
@@ -75,7 +75,11 @@ ifeq ($(MODERN),)
   $(ROM): $(OBJS)
 	$(ARMLD) $(ARMLDFLAGS) -Output $@ src/rom_header.o src/main.o $(ARMLIB)
     ifeq (compare,$(MAKECMDGOALS))
+      ifeq ($(BUGFIX),)
 	@$(SHA1) rom.sha1
+      else    
+	@echo "Of course it isn't gonna match, silly"
+      endif
     endif
 
   src/rom_header.o: src/rom_header.s
